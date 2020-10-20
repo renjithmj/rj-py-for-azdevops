@@ -52,6 +52,10 @@ stages:
            path: $(Build.ArtifactStagingDirectory)
            artifact: product-pipeline-artifact
 
+# PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
+# Checkout set to none for all jobs afer this
+
+
   - job: BuildPackage
     steps:
       - checkout: none
