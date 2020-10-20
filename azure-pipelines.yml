@@ -56,7 +56,7 @@ stages:
       - script: echo Unit Test
 
   - job: TestRun
-    condition: and(succeeded(), eq(variables['isreleasebeta'], true), eq(variables['isreleaserc'], true))
+    condition: and(succeeded(), eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - script: echo Test Run
 
