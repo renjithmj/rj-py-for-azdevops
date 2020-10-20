@@ -2,7 +2,6 @@
 # Create and test a Python package on multiple Python versions.
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
-
 #https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
 
 name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
@@ -13,6 +12,7 @@ trigger:
     - develop
     - release*alpha
     - release*beta
+    - release*rc
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -26,37 +26,47 @@ resources:
 
 variables:
   isdevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
-  isreleasealpha: $[endsWith(variables['Build.SourceBranch'], 'alpha')]
-  isreleasebeta: $[endsWith(variables['Build.SourceBranch'], 'beta')]
+  isreleasealpha: $[contains(variables['Build.SourceBranch'], 'alpha')]
+  isreleasebeta: $[contains(variables['Build.SourceBranch'], 'beta')]
+  isreleaserc: $[contains(variables['Build.SourceBranch'], 'rc')]
   
   
 pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-- stage: Test
+- stage: BuildAndDeploy
   jobs:
-  - job: T1
+  - job: GitPull
     steps:
       - script: echo $(isdevelop),$(isreleasealpha),$(isreleasebeta)
-      
-- stage: A
-  condition: and(succeeded(), eq(variables['isdevelop'], true))
-  jobs:
-  - job: A1
-    steps:
-      - script: echo Hello Stage A!
+      - script: echo git pull
 
-- stage: B
-  condition: and(succeeded(), eq(variables['isreleasealpha'], true)) 
-  jobs:
-  - job: B1
+  - job: BuildPackage
+    condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
-      - script: echo Hello Stage B!
+      - script: echo Build Package
 
-- stage: C
-  condition: and(succeeded(), eq(variables['isreleasebeta'], true))
-  jobs:
-  - job: C1
+  - job: ZipTest
+    condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
-      - script: echo Hello Stage C!
+    - script: echo ZipTest
+
+  - job: UnitTest
+    condition: and(succeeded(), eq(variables['isdevelop'], true))
+    steps:
+      - script: echo Unit Test
+
+
+  - job: AcceptanceTest
+    condition: and(succeeded(), eq(variables['isdevelop'], true))
+    steps:
+      - script: echo Acceptance Test
+
+  - job: DistributionArchive
+    condition: and(succeeded(), eq(variables['isdevelop'], true))
+    steps:
+      - script: echo DistributionArchive
+
+
+
