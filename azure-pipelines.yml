@@ -12,7 +12,7 @@ trigger:
     - develop
     - release*alpha*
     - release*beta*
-    - release*rc*
+    - release*rc
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -52,35 +52,45 @@ stages:
            path: $(Build.ArtifactStagingDirectory)
            artifact: product-pipeline-artifact
 
+# PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
+# Checkout set to none for all jobs afer this
+
+
   - job: BuildPackage
+    dependsOn: GitPull
     steps:
       - checkout: none
       - script: echo Build Package
 
   - job: ZipTest
+    dependsOn: BuildPackage
     steps:
       - checkout: none
       - script: echo ZipTest
 
   - job: UnitTest
+    dependsOn: GitPull
     condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Unit Test
 
   - job: TestRun
+    dependsOn: GitPull
     condition: and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Test Run
 
   - job: AcceptanceTest
+    dependsOn: GitPull
     condition: and(succeeded(), eq(variables['isreleaserc'], true))
     steps:
       - checkout: none
       - script: echo Acceptance Test
 
   - job: DistributionArchive
+    dependsOn: BuildPackage
     steps:
       - checkout: none
       - script: echo DistributionArchive
