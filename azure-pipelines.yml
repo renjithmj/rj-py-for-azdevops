@@ -10,9 +10,9 @@ trigger:
   branches:
     include: 
     - develop
-    - release*alpha
-    - release*beta
-    - release*rc
+    - release*alpha*
+    - release*beta*
+    - release*rc*
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
