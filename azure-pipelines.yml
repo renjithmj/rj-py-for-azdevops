@@ -2,29 +2,72 @@
 # Create and test a Python package on multiple Python versions.
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
+#https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
+
+name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
-- master
+  branches:
+    include: 
+    - develop
+    - release*alpha
+    - release*beta
+    - release*rc
+  paths:
+    exclude: 
+    # Exclude README.md from triggering content deployments
+    - README.md
 
+# no PR builds
+pr: none
+
+resources:
+- repo: self
+
+variables:
+  isdevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  isreleasealpha: $[contains(variables['Build.SourceBranch'], 'alpha')]
+  isreleasebeta: $[contains(variables['Build.SourceBranch'], 'beta')]
+  isreleaserc: $[contains(variables['Build.SourceBranch'], 'rc')]
+  
+  
 pool:
   vmImage: 'ubuntu-latest'
-strategy:
-  matrix:
-    Python37:
-      python.version: '3.7'
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+stages:
+- stage: BuildAndDeploy
+  jobs:
+  - job: GitPull
+    steps:
+      - script: echo $(isdevelop),$(isreleasealpha),$(isreleasebeta)
+      - script: echo git pull
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+  - job: BuildPackage
+    steps:
+      - script: echo Build Package
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+  - job: ZipTest
+    steps:
+    - script: echo ZipTest
+
+  - job: UnitTest
+    condition: and(succeeded(), eq(variables['isreleasealpha'], true))
+    steps:
+      - script: echo Unit Test
+
+  - job: TestRun
+    condition: and(succeeded(), eq(variables['isreleasebeta'], true))
+    steps:
+      - script: echo Test Run
+
+  - job: AcceptanceTest
+    condition: and(succeeded(), eq(variables['isreleaserc'], true))
+    steps:
+      - script: echo Acceptance Test
+
+  - job: DistributionArchive
+    steps:
+      - script: echo DistributionArchive
+
+
+
