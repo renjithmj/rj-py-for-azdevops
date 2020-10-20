@@ -43,11 +43,13 @@ stages:
 
   - job: BuildPackage
     steps:
+      - checkout: none
       - script: echo Build Package
 
   - job: ZipTest
     steps:
-    - script: echo ZipTest
+      - checkout: none
+      - script: echo ZipTest
 
   - job: UnitTest
     condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
