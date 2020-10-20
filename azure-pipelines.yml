@@ -25,7 +25,7 @@ resources:
 - repo: self
 
 variables:
-  isdevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
   isreleasealpha: $[contains(variables['Build.SourceBranch'], 'alpha')]
   isreleasebeta: $[contains(variables['Build.SourceBranch'], 'beta')]
   isreleaserc: $[contains(variables['Build.SourceBranch'], 'rc')]
