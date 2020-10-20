@@ -12,7 +12,7 @@ trigger:
     - develop
     - release*alpha*
     - release*beta*
-    - release*rc*
+    - release*rc
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
