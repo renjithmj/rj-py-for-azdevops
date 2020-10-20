@@ -8,7 +8,6 @@
 name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
-  batch: true
   branches:
     include: 
     - develop
@@ -17,7 +16,6 @@ trigger:
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
-    # Exclude the app folder from triggering content deployments, since it isn't included in the Dockerfile anyway
     - README.md
 
 # no PR builds
@@ -43,21 +41,21 @@ stages:
       - script: echo $(isdevelop),$(isreleasealpha),$(isreleasebeta)
       
 - stage: A
-  condition: and(succeeded(), eq(variables.isdevelop, true)) 	
+  condition: and(succeeded(), eq(variables['isdevelop'], true))
   jobs:
   - job: A1
     steps:
       - script: echo Hello Stage A!
 
 - stage: B
-  condition: and(succeeded(), eq(variables.isreleasealpha, true)) 
+  condition: and(succeeded(), eq(variables['isreleasealpha'], true)) 
   jobs:
   - job: B1
     steps:
       - script: echo Hello Stage B!
 
 - stage: C
-  condition: and(succeeded(), eq(variables.isreleasebeta, true)) 	
+  condition: and(succeeded(), eq(variables['isreleasebeta'], true))
   jobs:
   - job: C1
     steps:
