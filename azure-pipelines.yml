@@ -43,28 +43,29 @@ stages:
       - script: echo git pull
 
   - job: BuildPackage
-    condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
       - script: echo Build Package
 
   - job: ZipTest
-    condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
     - script: echo ZipTest
 
   - job: UnitTest
-    condition: and(succeeded(), eq(variables['isdevelop'], true))
+    condition: and(succeeded(), eq(variables['isreleasealpha'], true))
     steps:
       - script: echo Unit Test
 
+  - job: TestRun
+    condition: and(succeeded(), eq(variables['isreleasebeta'], true))
+    steps:
+      - script: echo Test Run
 
   - job: AcceptanceTest
-    condition: and(succeeded(), eq(variables['isdevelop'], true))
+    condition: and(succeeded(), eq(variables['isreleaserc'], true))
     steps:
       - script: echo Acceptance Test
 
   - job: DistributionArchive
-    condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
       - script: echo DistributionArchive
 
