@@ -69,25 +69,28 @@ stages:
       - script: echo ZipTest
 
   - job: UnitTest
+    dependsOn: GitPull
     condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Unit Test
 
   - job: TestRun
+    dependsOn: GitPull
     condition: and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Test Run
 
   - job: AcceptanceTest
+    dependsOn: GitPull
     condition: and(succeeded(), eq(variables['isreleaserc'], true))
     steps:
       - checkout: none
       - script: echo Acceptance Test
 
   - job: DistributionArchive
-    dependsOn: ZipTest
+    dependsOn: BuildPackage
     steps:
       - checkout: none
       - script: echo DistributionArchive
