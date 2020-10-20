@@ -51,7 +51,7 @@ stages:
     - script: echo ZipTest
 
   - job: UnitTest
-    condition: and(succeeded(), eq(variables['isreleasealpha'], true))
+    condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true)))
     steps:
       - script: echo Unit Test
 
