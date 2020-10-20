@@ -12,8 +12,8 @@ trigger:
   branches:
     include: 
     - develop
-    - release-*alpha
-    - release-*beta
+    - release*alpha
+    - release*beta
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -28,8 +28,8 @@ resources:
 
 variables:
   isdevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
-  isreleasealpha: $[endsWith(variables['Build.SourceBranch'], '-alpha')]
-  isreleasebeta: $[endsWith(variables['Build.SourceBranch'], '-beta')]
+  isreleasealpha: $[endsWith(variables['Build.SourceBranch'], 'alpha')]
+  isreleasebeta: $[endsWith(variables['Build.SourceBranch'], 'beta')]
   
   
 pool:
