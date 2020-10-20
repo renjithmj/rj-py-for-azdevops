@@ -57,11 +57,13 @@ stages:
 
 
   - job: BuildPackage
+    dependsOn: GitPull
     steps:
       - checkout: none
       - script: echo Build Package
 
   - job: ZipTest
+    dependsOn: BuildPackage
     steps:
       - checkout: none
       - script: echo ZipTest
