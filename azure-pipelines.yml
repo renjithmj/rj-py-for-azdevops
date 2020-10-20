@@ -35,27 +35,38 @@ pool:
   vmImage: 'ubuntu-latest'
 
 stages:
-- stage: CICD
+- stage: BuildAndDeploy
   jobs:
   - job: GitPull
     steps:
       - script: echo $(isdevelop),$(isreleasealpha),$(isreleasebeta)
+      - script: echo git pull
+
   - job: BuildPackage
     condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
-      - script: echo Hello Stage A!
-  - job: build
+      - script: echo Build Package
+
+  - job: ZipTest
     condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
-    - script: echo Hello Stage A!
-  - job: GitPull
-    steps:
-      - script: echo $(isdevelop),$(isreleasealpha),$(isreleasebeta)
-  - job: build
+    - script: echo ZipTest
+
+  - job: UnitTest
     condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
-      - script: echo Hello Stage A!
-  - job: build
+      - script: echo Unit Test
+
+
+  - job: AcceptanceTest
     condition: and(succeeded(), eq(variables['isdevelop'], true))
     steps:
-    - script: echo Hello Stage A!
+      - script: echo Acceptance Test
+
+  - job: DistributionArchive
+    condition: and(succeeded(), eq(variables['isdevelop'], true))
+    steps:
+      - script: echo DistributionArchive
+
+
+
