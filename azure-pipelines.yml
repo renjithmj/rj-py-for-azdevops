@@ -38,9 +38,9 @@ stages:
   jobs:
   - job: T1
     steps:
-      - script: echo $(variables.isdevelop)
-      - script: echo $(variables.isreleasealpha)
-      - script: echo $(variables.isreleasebeta)
+      - script: echo $(isdevelop)
+      - script: echo $(isreleasealpha)
+      - script: echo $(isreleasebeta)
       
 - stage: A
   condition: and(succeeded(), eq(variables.isdevelop, true)) 	
