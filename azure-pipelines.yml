@@ -21,8 +21,7 @@ trigger:
 # no PR builds
 pr: none
 
-resources:
-- repo: self
+
 
 variables:
   isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
