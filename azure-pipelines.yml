@@ -39,7 +39,7 @@ stages:
   - job: A1
     steps:
       - script: echo Hello Stage A!
-	  - script: echo $(isdevelop)
+      - script: echo $(isdevelop)
 
 - stage: B
   condition: and(succeeded(), eq(variables.isrelease-alpha, true))
