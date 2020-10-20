@@ -26,33 +26,34 @@ resources:
 
 variables:
   isdevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
-  isrelease-alpha: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-alpha')]
-  isrelease-beta: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-beta')]
+  isreleasealpha: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-alpha')]
+  isreleasebeta: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-beta')]
+  
   
 pool:
   vmImage: 'ubuntu-latest'
 
 stages:
 - stage: A
-  condition: and(succeeded(), eq(isdevelop, true)) 	
+  condition: and(succeeded(), eq(variables.isdevelop, true)) 	
   jobs:
   - job: A1
     steps:
       - script: echo Hello Stage A!
-      - script: echo $(isdevelop)
+      - script: echo $(variables.isdevelop)
 
 - stage: B
-  condition: and(succeeded(), eq(variables.isrelease-alpha, true))
+  condition: and(succeeded(), eq(variables.isdevelop, true))
   jobs:
   - job: B1
     steps:
       - script: echo Hello Stage B!
-      - script: echo $(isrelease-alpha)
+      - script: echo $(variables.isdevelop)
 
 - stage: C
-  condition: and(succeeded(), eq(variables.isrelease-beta, true))
+  condition: and(succeeded(), eq(variables.isdevelop, true))
   jobs:
   - job: C1
     steps:
       - script: echo Hello Stage C!
-      - script: echo $(isrelease-beta)
+      - script: echo $(variables.isdevelop)
