@@ -28,8 +28,8 @@ resources:
 
 variables:
   isdevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
-  isreleasealpha: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-alpha')]
-  isreleasebeta: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-beta')]
+  isreleasealpha: $[endsWith(variables['Build.SourceBranch'], '-alpha')]
+  isreleasebeta: $[endsWith(variables['Build.SourceBranch'], '-beta')]
   
   
 pool:
