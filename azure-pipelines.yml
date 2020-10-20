@@ -3,6 +3,8 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
+#https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
+
 name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
@@ -10,8 +12,8 @@ trigger:
   branches:
     include: 
     - develop
-    - release-1.1.0-alpha
-    - release-1.1.0-beta
+    - release*alpha
+    - release*beta
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -26,8 +28,8 @@ resources:
 
 variables:
   isdevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
-  isreleasealpha: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-alpha')]
-  isreleasebeta: $[eq(variables['Build.SourceBranch'], 'refs/heads/release-1.1.0-beta')]
+  isreleasealpha: $[endsWith(variables['Build.SourceBranch'], 'alpha')]
+  isreleasebeta: $[endsWith(variables['Build.SourceBranch'], 'beta')]
   
   
 pool:
@@ -46,20 +48,17 @@ stages:
   - job: A1
     steps:
       - script: echo Hello Stage A!
-      - script: echo $(variables.isdevelop)
 
 - stage: B
-  condition: and(succeeded(), eq(variables.isreleasealpha, true))
+  condition: and(succeeded(), eq(variables.isreleasealpha, true)) 
   jobs:
   - job: B1
     steps:
       - script: echo Hello Stage B!
-      - script: echo $(variables.isreleasealpha)
 
 - stage: C
-  condition: and(succeeded(), eq(variables.isreleasebeta, true))
+  condition: and(succeeded(), eq(variables.isreleasebeta, true)) 	
   jobs:
   - job: C1
     steps:
       - script: echo Hello Stage C!
-      - script: echo $(variables.isreleasebeta)
