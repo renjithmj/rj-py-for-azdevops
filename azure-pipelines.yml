@@ -87,6 +87,7 @@ stages:
       - script: echo Acceptance Test
 
   - job: DistributionArchive
+    dependsOn: ZipTest
     steps:
       - checkout: none
       - script: echo DistributionArchive
