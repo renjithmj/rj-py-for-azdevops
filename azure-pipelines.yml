@@ -48,7 +48,7 @@ stages:
     steps:
       - script: echo Hello Stage B!
       - script: echo $(isrelease-alpha)
-	  
+
 - stage: C
   condition: and(succeeded(), eq(variables.isrelease-beta, true))
   jobs:
