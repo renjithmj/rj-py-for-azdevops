@@ -21,8 +21,7 @@ trigger:
 # no PR builds
 pr: none
 
-resources:
-- repo: self
+
 
 variables:
   isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
@@ -38,35 +37,52 @@ stages:
 - stage: BuildAndDeploy
   jobs:
   - job: GitPull
+    displayName: Git pull and make files available to pipeline process
     steps:
-      - script: echo $(isdevelop),$(isreleasealpha),$(isreleasebeta)
-      - script: echo git pull
+       - task: CopyFiles@2
+         inputs:
+           SourceFolder: '$(Build.SourcesDirectory)'
+           contents: |
+             src/**
+             test/**
+             requirements.txt
+           targetFolder: $(Build.ArtifactStagingDirectory)
+       - task: PublishPipelineArtifact@1
+         inputs:
+           path: $(Build.ArtifactStagingDirectory)
+           artifact: product-pipeline-artifact
 
   - job: BuildPackage
     steps:
+      - checkout: none
       - script: echo Build Package
 
   - job: ZipTest
     steps:
-    - script: echo ZipTest
+      - checkout: none
+      - script: echo ZipTest
 
   - job: UnitTest
     condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
+      - checkout: none
       - script: echo Unit Test
 
   - job: TestRun
     condition: and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
+      - checkout: none
       - script: echo Test Run
 
   - job: AcceptanceTest
     condition: and(succeeded(), eq(variables['isreleaserc'], true))
     steps:
+      - checkout: none
       - script: echo Acceptance Test
 
   - job: DistributionArchive
     steps:
+      - checkout: none
       - script: echo DistributionArchive
 
 
