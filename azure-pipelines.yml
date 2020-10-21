@@ -33,7 +33,9 @@ pr:
 
 variables:
   istrial1: $[contains(variables['Build.SourceBranch'], 'trial')]
-  istrial2: $[contains(variables['Build.SourceBranch'], 'refs/heads/trial')]
+  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
+  isalpha: $[contains(variables['Build.SourceBranch'], '-alpha')]
+  isanybranch: $[contains(variables['Build.SourceBranch'], 'refs/heads')]
   istrial3: $[and(contains(variables['build.sourceBranch'], 'refs/head/trial'), contains(variables['build.sourceBranch'], 'trial'))]
   isprtargettrial: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['build.sourceBranch'], 'trial'))]
   
@@ -46,6 +48,20 @@ stages:
   jobs:
   - job: RunLint
     displayName: Run Lint - QC Checks
+    steps:
+       - task: Bash@3
+         inputs:
+           targetType: 'inline'
+           script: |
+             echo $(istrial1)
+             echo $(istrial2)
+             echo $(istrial3)
+             echo $(isprtargettrial)
+  
+  - job: tester
+    displayName: Tester
+    condition: and(succeeded(), or(eq(variables['isdevelop'], true),
+                  and(eq(variables['isanybranch'], true),eq(variables['isdevelop'], false),eq(variables['isalpha'], false)))) 
     steps:
        - task: Bash@3
          inputs:
