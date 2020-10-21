@@ -39,6 +39,7 @@ variables:
   isreleasebeta: $[contains(variables['Build.SourceBranchName'], 'beta')]
   isreleaserc: $[contains(variables['Build.SourceBranchName'], 'rc')]
   isprtrigger: $[contains(variables['Build.SourceBranchName'], 'merge')]
+  istagtrigger: $[contains(variables['Build.SourceBranch'], 'tag')]
   
 pool:
   vmImage: 'ubuntu-latest'
@@ -49,7 +50,7 @@ stages:
   jobs:
   - job: RunLint
     displayName: Run Lint - QC Checks
-    condition: and(succeeded(), eq(variables['isprtrigger'], true))
+    condition: and(succeeded(), or(eq(variables['isprtrigger'], true),eq(variables['istagtrigger'], true))) 
     steps:
          - script: echo Build Package
 
@@ -61,6 +62,7 @@ stages:
          inputs:
            targetType: 'inline'
            script: |
+             echo $(Build.SourceBranch)
              echo $(Build.SourceBranchName)
        - task: CopyFiles@2
          inputs:
