@@ -86,6 +86,7 @@ stages:
     steps:
       - checkout: none
       - script: echo Build Docs
+
   - job: BuildCondaEnv
     displayName: Build Conda Env
     dependsOn: PublishPipelineArtifact
@@ -94,27 +95,37 @@ stages:
     steps:
       - checkout: none
       - script: echo Build Conda Env
+
   - job: BuildTestsZip
     displayName: Build Tests Zip
     dependsOn: PublishPipelineArtifact
-    condition:  and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+                  eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
-      - script: echo Unit Test
+      - script: echo Build Tests Zip
+
   - job: BuildDistribution
     displayName: Build Distribution
     dependsOn: PublishPipelineArtifact
-    condition: and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+                  eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Build Distribution
+
   - job: BuildDockerImages
     displayName: Build Docker Images
     dependsOn: PublishPipelineArtifact
-    condition: and(succeeded(), eq(variables['isreleaserc'], true))
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+                  eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
       - script: Build Docker Images
+      
   - job: RunUnitTest
     displayName: Run Unit Tests
     steps:
