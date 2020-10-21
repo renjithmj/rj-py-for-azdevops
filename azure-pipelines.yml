@@ -125,12 +125,16 @@ stages:
     steps:
       - checkout: none
       - script: Build Docker Images
-      
+
   - job: RunUnitTest
     displayName: Run Unit Tests
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+                  eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Run Unit Tests
+      
   - job: RunPipeLine
     displayName: Run Pipeline
     steps:
