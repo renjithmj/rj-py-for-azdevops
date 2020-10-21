@@ -11,6 +11,7 @@ trigger:
     include: 
     - development
     - releases/*
+    - hf/*
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -26,8 +27,7 @@ pr:
     include:
     - develop
     - releases/*
-
-
+    - hf/*
 
 variables:
   isdevelop: $[contains(variables['Build.SourceBranchName'], 'develop')]
