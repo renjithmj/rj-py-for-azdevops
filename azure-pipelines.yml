@@ -4,12 +4,13 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
 # https://elanderson.net/2020/05/azure-devops-pipelines-depends-on-with-conditionals-in-yaml/
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
 name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
   branches:
     include: 
-    - develop
+    - development
     - releases/*
     - hf/*
   paths:
@@ -31,15 +32,22 @@ pr:
 
 variables:
   isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
+  ishotfix: $[contains(variables['Build.SourceBranch'], 'hotfix/')]
+  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases/')]
+  isanytag: $[contains(variables['Build.SourceBranch'], 'tag')]
+  isanypr: $[contains(variables['Build.SourceBranch'], 'merge')]
   isreleasealpha: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-alpha'))]
   isreleasebeta: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-beta'))]
   isreleaserc: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-rc'))]
   istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-alpha'))]
   istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-beta'))]
   istagrc: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
-  isanypr: $[contains(variables['Build.SourceBranch'], 'merge')]
-  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases/')]
-  isanytag: $[contains(variables['Build.SourceBranch'], 'tag')]
+  isprtargetdevelop: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'develop'))]
+  isprtargethotfix: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'hotfixes/'))]
+  isprtargetrelalpha: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-alpha'))]
+  isprtargetrelbeta: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-beta'))]
+  isprtargetrelrc: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-rc'))]
+  
   
 pool:
   vmImage: 'ubuntu-latest'
