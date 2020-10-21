@@ -27,6 +27,7 @@ pr:
   branches:
     include:
     - develop
+    - trial
     - releases/*
     - hf/*
 
@@ -34,7 +35,7 @@ variables:
   istrial1: $[contains(variables['Build.SourceBranch'], 'trial')]
   istrial2: $[contains(variables['Build.SourceBranch'], 'refs/heads/trial')]
   istrial3: $[and(contains(variables['build.sourceBranch'], 'refs/head/trial'), contains(variables['build.sourceBranch'], 'trial'))]
-              
+  isprtargettrial: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['build.sourceBranch'], 'trial'))]
   
 pool:
   vmImage: 'ubuntu-latest'
@@ -53,4 +54,5 @@ stages:
              echo $(istrial1)
              echo $(istrial2)
              echo $(istrial3)
+             echo $(isprtargettrial)
 
