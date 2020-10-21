@@ -34,14 +34,21 @@ variables:
   isreleasealpha: $[contains(variables['Build.SourceBranchName'], 'alpha')]
   isreleasebeta: $[contains(variables['Build.SourceBranchName'], 'beta')]
   isreleaserc: $[contains(variables['Build.SourceBranchName'], 'rc')]
-  
+  isprtrigger: $[contains(variables['Build.SourceBranchName'], 'merge')]
   
 pool:
   vmImage: 'ubuntu-latest'
 
 stages:
 - stage: BuildAndDeploy
+
   jobs:
+  - job: RunLint
+    displayName: Run Lint - QC Checks
+    condition: and(succeeded(), eq(variables['isprtrigger'], true))
+    steps:
+         - script: echo Build Package
+
   - job: GitPull
     displayName: Git pull and make files available to pipeline process
     steps:
