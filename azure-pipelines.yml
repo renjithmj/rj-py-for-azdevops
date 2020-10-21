@@ -34,7 +34,7 @@ pr:
 variables:
   istrial1: $[contains(variables['Build.SourceBranch'], 'trial')]
   istrial2: $[contains(variables['Build.SourceBranch'], 'refs/heads/trial')]
-  istrial3: $[and(contains(variables['build.sourceBranch'], 'refs/head/trial'), contains(variables['build.sourceBranch'], 'trial'))]
+  istrial3: $[and(contains(variables['build.sourceBranch'], 'refs/heads/trial'), contains(variables['build.sourceBranch'], 'trial'))]
   isprtargettrial: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['build.sourceBranch'], 'trial'))]
   
 pool:
