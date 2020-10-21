@@ -152,7 +152,8 @@ stages:
       - script: echo Run Functional Tests
 
   - job: DeliverDockerImage
-    condition: and(succeeded(), or(eq(variables['istagrc'], true),eq(variables['istagprod'], true))) 
+    condition: and(succeeded(), or(eq(variables['istagrc'], true),
+                  and(eq(variables['isanytag'], true),eq(variables['istagalpha'], false),eq(variables['istagbeta'], false),ne(variables['istagrc'], false))))
     displayName: Deliver Docker Image
     steps:
       - checkout: none
@@ -160,9 +161,7 @@ stages:
       
   - job: BuildProjectSite
     condition: and(succeeded(), or(eq(variables['istagrc'], true),
-                  and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),ne(variables['istagrc'], true))
-                  )
-                  ) 
+                  and(eq(variables['isanytag'], true),eq(variables['istagalpha'], false),eq(variables['istagbeta'], false),eq(variables['istagrc'], false)))) 
     displayName: Build Project Site
     steps:
       - checkout: none
