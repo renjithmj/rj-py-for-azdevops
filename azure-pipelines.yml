@@ -53,7 +53,7 @@ stages:
     condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true))) 
     steps:
          - script: echo Run Lint - QC Checks
-  - job: GitPull
+  - job: PublishPipelineArtifact
     displayName: Git pull and make files available to pipeline process
     # PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
     # Checkout set to none for all jobs afer this
@@ -72,28 +72,30 @@ stages:
            artifact: product-pipeline-artifact
   - job: BuildDocs
     displayName: Build Docs
-    dependsOn: GitPull
+    dependsOn: PublishPipelineArtifact
     steps:
       - checkout: none
-      - script: echo Build Package
-  - job: ZipTest
+      - script: echo Build Docs
+  - job: BuildCondaEnv
+    displayName: Build Conda Env
     steps:
       - checkout: none
-      - script: echo ZipTest
-  - job: UnitTest
-    dependsOn: GitPull
+      - script: echo Build Conda Env
+  - job: BuildTestsZip
+    displayName: Build Tests Zip
+    dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Unit Test
   - job: TestRun
-    dependsOn: GitPull
+    dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Test Run
   - job: AcceptanceTest
-    dependsOn: GitPull
+    dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), eq(variables['isreleaserc'], true))
     steps:
       - checkout: none
