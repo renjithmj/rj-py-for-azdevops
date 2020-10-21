@@ -9,27 +9,25 @@ name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include: 
-    - develop
-    - release*alpha*
-    - release*beta*
-    - release*rc
-  paths:
+    - development
+    - releases/*
+    
+    paths:
     exclude: 
     # Exclude README.md from triggering content deployments
     - README.md
+
+    # Include tags for CI
   tags:
     include:
     - '*'
 
-
-# no PR builds
+# PR for the below target branches triggers linting and 
 pr:
   branches:
     include:
     - develop
-    - release*alpha*
-    - release*beta*
-    - release*rc
+    - releases/*
 
 
 
