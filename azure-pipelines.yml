@@ -17,6 +17,10 @@ trigger:
     exclude: 
     # Exclude README.md from triggering content deployments
     - README.md
+  tags:
+    include:
+    - '*'
+
 
 # no PR builds
 pr:
