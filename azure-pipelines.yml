@@ -84,26 +84,49 @@ stages:
   - job: BuildTestsZip
     displayName: Build Tests Zip
     dependsOn: PublishPipelineArtifact
-    condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
+    condition:  and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Unit Test
-  - job: TestRun
+  - job: BuildDistribution
+    displayName: Build Distribution
     dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
-      - script: echo Test Run
-  - job: AcceptanceTest
+      - script: echo Build Distribution
+  - job: BuildDockerImages
+    displayName: Build Docker Images
     dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), eq(variables['isreleaserc'], true))
     steps:
       - checkout: none
-      - script: echo Acceptance Test
-  - job: DistributionArchive
+      - script: Build Docker Images
+  - job: RunUnitTest
+    displayName: Run Unit Tests
     steps:
       - checkout: none
-      - script: echo DistributionArchive
+      - script: echo Run Unit Tests
+  - job: RunPipeLine
+    displayName: Run Pipeline
+    steps:
+      - checkout: none
+      - script: echo Run Pipeline
+  - job: RunFunctionalTest
+    displayName: Run Functional Tests
+    steps:
+      - checkout: none
+      - script: echo Run Functional Tests
+  - job: DeliverDockerImage
+    displayName: Deliver Docker Image
+    steps:
+      - checkout: none
+      - script: echo Deliver Docker Image  
+  - job: BuildProjectSite
+    displayName: Build Project Site
+    steps:
+      - checkout: none
+      - script: echo Build Project Site
 
 
 
