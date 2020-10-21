@@ -82,7 +82,7 @@ stages:
     displayName: Build Docs
     dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
-                   eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
+               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
     steps:
       - checkout: none
       - script: echo Build Docs
@@ -91,7 +91,7 @@ stages:
     displayName: Build Conda Env
     dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
-                   eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
+               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
     steps:
       - checkout: none
       - script: echo Build Conda Env
@@ -100,8 +100,8 @@ stages:
     displayName: Build Tests Zip
     dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
-                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-                  eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Build Tests Zip
@@ -110,8 +110,8 @@ stages:
     displayName: Build Distribution
     dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
-                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-                  eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Build Distribution
@@ -120,8 +120,8 @@ stages:
     displayName: Build Docker Images
     dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
-                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-                  eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
       - script: Build Docker Images
@@ -129,28 +129,36 @@ stages:
   - job: RunUnitTest
     displayName: Run Unit Tests
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
-                  eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-                  eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Run Unit Tests
-      
+
   - job: RunPipeLine
     displayName: Run Pipeline
+    condition: and(succeeded(), or(eq(variables['ishotfix'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true),
+               eq(variables['istagbeta'], true),eq(variables['istagrc'], true))) 
     steps:
       - checkout: none
       - script: echo Run Pipeline
+
   - job: RunFunctionalTest
     displayName: Run Functional Tests
+    condition: and(succeeded(), or(eq(variables['isreleaserc'], true),
+               eq(variables['ishotfix'], true),eq(variables['istagrc'], true))) 
     steps:
       - checkout: none
       - script: echo Run Functional Tests
+
   - job: DeliverDockerImage
+    condition: and(succeeded(), or(eq(variables['isreleaserc'], true),eq(variables['isprodtag'], true))) 
     displayName: Deliver Docker Image
     steps:
       - checkout: none
       - script: echo Deliver Docker Image  
   - job: BuildProjectSite
+    condition: and(succeeded(), or(eq(variables['isreleaserc'], true),eq(variables['isprodtag'], true))) 
     displayName: Build Project Site
     steps:
       - checkout: none
