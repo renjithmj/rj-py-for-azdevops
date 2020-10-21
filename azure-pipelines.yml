@@ -9,7 +9,7 @@ name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include: 
-    - development
+    - develop
     - releases/*
     - hf/*
   paths:
