@@ -73,12 +73,16 @@ stages:
   - job: BuildDocs
     displayName: Build Docs
     dependsOn: PublishPipelineArtifact
-    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
+    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
+                   eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
     steps:
       - checkout: none
       - script: echo Build Docs
   - job: BuildCondaEnv
     displayName: Build Conda Env
+    dependsOn: PublishPipelineArtifact
+    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
+                   eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
     steps:
       - checkout: none
       - script: echo Build Conda Env
