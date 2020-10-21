@@ -130,7 +130,7 @@ stages:
                eq(variables['isprtargethotfix'], true))) 
     steps:
       - checkout: none
-      - script: Build Docker Images
+      - script: echo Build Docker Images
 
   - job: RunUnitTest
     displayName: Run Unit Tests
