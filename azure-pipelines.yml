@@ -56,11 +56,7 @@ stages:
 - stage: BuildAndDeploy
 
   jobs:
-  - job: RunLint
-    displayName: Run Lint - QC Checks
-    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true))) 
-    steps:
-         - script: echo Run Lint - QC Checks
+
   - job: PublishPipelineArtifact
     displayName: Git pull and make files available to pipeline process
     # PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
@@ -78,6 +74,14 @@ stages:
          inputs:
            path: $(Build.ArtifactStagingDirectory)
            artifact: product-pipeline-artifact
+
+ 
+  - job: RunLint
+    displayName: Run Lint - QC Checks
+    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true))) 
+    steps:
+         - script: echo Run Lint - QC Checks
+
   - job: BuildDocs
     displayName: Build Docs
     dependsOn: PublishPipelineArtifact
@@ -108,7 +112,10 @@ stages:
 
   - job: BuildDistribution
     displayName: Build Distribution
-    dependsOn: PublishPipelineArtifact
+    dependsOn: 
+    - BuildDocs
+    - BuildCondaEnv
+    - BuildTestsZip
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
                eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
                eq(variables['isprtargethotfix'], true))) 
@@ -118,7 +125,7 @@ stages:
 
   - job: BuildDockerImages
     displayName: Build Docker Images
-    dependsOn: PublishPipelineArtifact
+    dependsOn: BuildDistribution
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
                eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
                eq(variables['isprtargethotfix'], true))) 
@@ -128,6 +135,7 @@ stages:
 
   - job: RunUnitTest
     displayName: Run Unit Tests
+    dependsOn: BuildDockerImages
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
                eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
                eq(variables['isprtargethotfix'], true))) 
@@ -137,6 +145,7 @@ stages:
 
   - job: RunPipeLine
     displayName: Run Pipeline
+    dependsOn: RunUnitTest
     condition: and(succeeded(), or(eq(variables['ishotfix'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true),
                eq(variables['istagbeta'], true),eq(variables['istagrc'], true))) 
     steps:
@@ -145,6 +154,7 @@ stages:
 
   - job: RunFunctionalTest
     displayName: Run Functional Tests
+    dependsOn: RunUnitTest
     condition: and(succeeded(), or(eq(variables['isreleaserc'], true),
                eq(variables['ishotfix'], true),eq(variables['istagrc'], true))) 
     steps:
@@ -152,6 +162,9 @@ stages:
       - script: echo Run Functional Tests
 
   - job: DeliverDockerImage
+    dependsOn: 
+    - RunFunctionalTest
+    - BuildDockerImages
     condition: and(succeeded(), or(eq(variables['istagrc'], true),
                and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
                ne(variables['istagrc'], true))))
@@ -161,6 +174,11 @@ stages:
       - script: echo Deliver Docker Image  
       
   - job: BuildProjectSite
+    dependsOn: 
+    - RunLint
+    - BuildDistribution
+    - RunUnitTest
+    - RunFunctionalTest
     condition: and(succeeded(), or(eq(variables['istagrc'], true),
                and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
                ne(variables['istagrc'], true)))) 
