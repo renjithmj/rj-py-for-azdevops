@@ -30,12 +30,16 @@ pr:
     - hf/*
 
 variables:
-  isdevelop: $[contains(variables['Build.SourceBranchName'], 'develop')]
-  isreleasealpha: $[contains(variables['Build.SourceBranchName'], 'alpha')]
-  isreleasebeta: $[contains(variables['Build.SourceBranchName'], 'beta')]
-  isreleaserc: $[contains(variables['Build.SourceBranchName'], 'rc')]
-  isprtrigger: $[contains(variables['Build.SourceBranchName'], 'merge')]
-  istagtrigger: $[contains(variables['Build.SourceBranch'], 'tag')]
+  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
+  isreleasealpha: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-alpha'))]
+  isreleasebeta: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-beta'))]
+  isreleaserc: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-rc'))]
+  istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-alpha'))]
+  istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-beta'))]
+  istagrc: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
+  isanypr: $[contains(variables['Build.SourceBranch'], 'merge')]
+  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases/')]
+  isanytag: $[contains(variables['Build.SourceBranch'], 'tag')]
   
 pool:
   vmImage: 'ubuntu-latest'
@@ -46,20 +50,14 @@ stages:
   jobs:
   - job: RunLint
     displayName: Run Lint - QC Checks
-    condition: and(succeeded(), or(eq(variables['isprtrigger'], true),eq(variables['istagtrigger'], true))) 
+    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true))) 
     steps:
-         - script: echo Build Package
-
+         - script: echo Run Lint - QC Checks
   - job: GitPull
     displayName: Git pull and make files available to pipeline process
+    # PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
+    # Checkout set to none for all jobs afer this
     steps:
-
-       - task: Bash@3
-         inputs:
-           targetType: 'inline'
-           script: |
-             echo $(Build.SourceBranch)
-             echo $(Build.SourceBranchName)
        - task: CopyFiles@2
          inputs:
            SourceFolder: '$(Build.SourcesDirectory)'
@@ -72,45 +70,35 @@ stages:
          inputs:
            path: $(Build.ArtifactStagingDirectory)
            artifact: product-pipeline-artifact
-# PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
-# Checkout set to none for all jobs afer this
-
-
-  - job: BuildPackage
+  - job: BuildDocs
+    displayName: Build Docs
     dependsOn: GitPull
     steps:
       - checkout: none
       - script: echo Build Package
-
   - job: ZipTest
-    dependsOn: BuildPackage
     steps:
       - checkout: none
       - script: echo ZipTest
-
   - job: UnitTest
     dependsOn: GitPull
     condition: and(succeeded(), or(eq(variables['isreleasealpha'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Unit Test
-
   - job: TestRun
     dependsOn: GitPull
     condition: and(succeeded(), or(eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true)))
     steps:
       - checkout: none
       - script: echo Test Run
-
   - job: AcceptanceTest
     dependsOn: GitPull
     condition: and(succeeded(), eq(variables['isreleaserc'], true))
     steps:
       - checkout: none
       - script: echo Acceptance Test
-
   - job: DistributionArchive
-    dependsOn: BuildPackage
     steps:
       - checkout: none
       - script: echo DistributionArchive
