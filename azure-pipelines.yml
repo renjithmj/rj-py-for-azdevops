@@ -42,7 +42,6 @@ variables:
   istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-alpha'))]
   istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-beta'))]
   istagrc: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
-  istagprod: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
   isprtargetdevelop: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'develop'))]
   isprtargethotfix: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'hotfixes/'))]
   isprtargetrelalpha: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-alpha'))]
@@ -158,8 +157,12 @@ stages:
     steps:
       - checkout: none
       - script: echo Deliver Docker Image  
+      
   - job: BuildProjectSite
-    condition: and(succeeded(), or(eq(variables['istagrc'], true),eq(variables['istagprod'], true))) 
+    condition: and(succeeded(), or(eq(variables['istagrc'], true),
+                  and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),ne(variables['istagrc'], true))
+                  )
+                  ) 
     displayName: Build Project Site
     steps:
       - checkout: none
