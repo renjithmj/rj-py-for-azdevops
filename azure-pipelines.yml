@@ -19,15 +19,21 @@ trigger:
     - README.md
 
 # no PR builds
-pr: none
+pr:
+  branches:
+    include:
+    - develop
+    - release*alpha*
+    - release*beta*
+    - release*rc
 
 
 
 variables:
-  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
-  isreleasealpha: $[contains(variables['Build.SourceBranch'], 'alpha')]
-  isreleasebeta: $[contains(variables['Build.SourceBranch'], 'beta')]
-  isreleaserc: $[contains(variables['Build.SourceBranch'], 'rc')]
+  isdevelop: $[contains(variables['Build.SourceBranchName'], 'develop')]
+  isreleasealpha: $[contains(variables['Build.SourceBranchName'], 'alpha')]
+  isreleasebeta: $[contains(variables['Build.SourceBranchName'], 'beta')]
+  isreleaserc: $[contains(variables['Build.SourceBranchName'], 'rc')]
   
   
 pool:
@@ -39,6 +45,12 @@ stages:
   - job: GitPull
     displayName: Git pull and make files available to pipeline process
     steps:
+
+       - task: Bash@3
+         inputs:
+           targetType: 'inline'
+           script: |
+             echo $(Build.SourceBranchName)
        - task: CopyFiles@2
          inputs:
            SourceFolder: '$(Build.SourcesDirectory)'
@@ -51,7 +63,6 @@ stages:
          inputs:
            path: $(Build.ArtifactStagingDirectory)
            artifact: product-pipeline-artifact
-
 # PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
 # Checkout set to none for all jobs afer this
 
