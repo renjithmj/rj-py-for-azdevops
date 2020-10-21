@@ -60,7 +60,7 @@ stages:
   
   - job: tester
     displayName: Tester
-    condition: and(succeeded(), or(eq(variables['istrial3'], true),
+    condition: and(succeeded(), or(eq(variables['develop'], true),
                   and(eq(variables['isanybranch'], true),eq(variables['isdevelop'], true),eq(variables['isalpha'], false)))) 
     steps:
        - task: Bash@3
