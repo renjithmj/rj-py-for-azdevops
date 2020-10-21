@@ -36,7 +36,7 @@ variables:
   isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
   isalpha: $[contains(variables['Build.SourceBranch'], '-alpha')]
   isanybranch: $[contains(variables['Build.SourceBranch'], 'refs/heads')]
-  istrial3: $[and(contains(variables['build.sourceBranch'], 'refs/head/trial'), contains(variables['build.sourceBranch'], 'trial'))]
+  istrial3: $[and(contains(variables['build.sourceBranch'], 'refs/head'), contains(variables['build.sourceBranch'], 'trial'))]
   isprtargettrial: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['build.sourceBranch'], 'trial'))]
   
 pool:
@@ -60,7 +60,7 @@ stages:
   
   - job: tester
     displayName: Tester
-    condition: and(succeeded(), or(eq(variables['isdevelop'], true),
+    condition: and(succeeded(), or(eq(variables['istrial3'], true),
                   and(eq(variables['isanybranch'], true),eq(variables['isdevelop'], true),eq(variables['isalpha'], false)))) 
     steps:
        - task: Bash@3
