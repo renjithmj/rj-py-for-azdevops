@@ -11,12 +11,10 @@ trigger:
     include: 
     - development
     - releases/*
-    
-    paths:
+  paths:
     exclude: 
     # Exclude README.md from triggering content deployments
     - README.md
-
     # Include tags for CI
   tags:
     include:
