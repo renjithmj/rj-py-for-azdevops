@@ -153,7 +153,8 @@ stages:
 
   - job: DeliverDockerImage
     condition: and(succeeded(), or(eq(variables['istagrc'], true),
-                  and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),ne(variables['istagrc'], true))))
+               and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
+               ne(variables['istagrc'], true))))
     displayName: Deliver Docker Image
     steps:
       - checkout: none
@@ -161,7 +162,8 @@ stages:
       
   - job: BuildProjectSite
     condition: and(succeeded(), or(eq(variables['istagrc'], true),
-                  and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),ne(variables['istagrc'], true)))) 
+               and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
+               ne(variables['istagrc'], true)))) 
     displayName: Build Project Site
     steps:
       - checkout: none
