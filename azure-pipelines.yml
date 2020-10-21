@@ -3,7 +3,6 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
-# https://elanderson.net/2020/05/azure-devops-pipelines-depends-on-with-conditionals-in-yaml/
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
 name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
 
