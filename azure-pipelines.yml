@@ -12,6 +12,7 @@ trigger:
     - develop
     - releases/*
     - hotfix/*
+    - ./rel/*
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -54,7 +55,7 @@ variables:
 
 stages:
 - stage: ProductPipeline 
-  displayName: ProductPipeline -
+  displayName: ->
 
   jobs:
   - job: StatusTest
