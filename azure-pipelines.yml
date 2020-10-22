@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
 # https://elanderson.net/2020/05/azure-devops-pipelines-depends-on-with-conditionals-in-yaml/
-name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
+name: $(build.sourceBranch)-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
   branches:
