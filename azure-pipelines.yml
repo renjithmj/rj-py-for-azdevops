@@ -3,16 +3,15 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
-# https://elanderson.net/2020/05/azure-devops-pipelines-depends-on-with-conditionals-in-yaml/
-name: $(build.sourceBranchName)-$(Date:yyyyMMdd)$(Rev:.r)
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+name: $(build.sourceBranch)-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
   branches:
     include: 
     - develop
     - releases/*
-    - hf/*
-    - trial
+    - hotfix/*
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -22,51 +21,180 @@ trigger:
     include:
     - '*'
 
-# PR for the below target branches triggers linting and 
+# PR for the below target branches triggers linting and few other steps   
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/repos/azure-repos-git?view=azure-devops&tabs=yaml#pr-triggers
+#PR trigger doesnt work for Azure Repos unless the branch policies for each branch is set....one more reason why GitHub is much better :-)
 pr:
   branches:
     include:
     - develop
-    - trial
     - releases/*
     - hf/*
 
 variables:
-  istrial1: $[contains(variables['Build.SourceBranch'], 'trial')]
-  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
-  isalpha: $[contains(variables['Build.SourceBranch'], '-alpha')]
-  isanybranch: $[contains(variables['Build.SourceBranch'], 'refs/heads')]
-  istrial3: $[and(contains(variables['build.sourceBranch'], 'refs/head'), contains(variables['build.sourceBranch'], 'trial'))]
-  isprtargettrial: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['build.sourceBranch'], 'trial'))]
+  isdevelop: $[contains(variables['Build.SourceBranch'], 'refs_heads_develop')]
+  ishotfix: $[contains(variables['Build.SourceBranch'], 'hotfix/')]
+  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases/')]
+  isanytag: $[contains(variables['Build.SourceBranch'], 'refs_tags')]
+  isanypr: $[contains(variables['Build.SourceBranch'], 'merge')]
+  isreleasealpha: $[and(contains(variables['build.sourceBranch'], 'refs_heads'), contains(variables['build.sourceBranch'], '-alpha'))]
+  isreleasebeta: $[and(contains(variables['build.sourceBranch'], 'refs_heads'), contains(variables['build.sourceBranch'], '-beta'))]
+  isreleaserc: $[and(contains(variables['build.sourceBranch'], 'refs_heads'), contains(variables['build.sourceBranch'], '-rc'))]
+  istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs_tags'), contains(variables['build.sourceBranch'], '-alpha'))]
+  istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs_tags'), contains(variables['build.sourceBranch'], '-beta'))]
+  istagrc: $[and(contains(variables['build.sourceBranch'], 'refs_tags'), contains(variables['build.sourceBranch'], '-rc'))]
+  isprtargetdevelop: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'develop'))]
+  isprtargethotfix: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'hotfixes/'))]
+  isprtargetrelalpha: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-alpha'))]
+  isprtargetrelbeta: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-beta'))]
+  isprtargetrelrc: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-rc'))]
   
-pool:
-  vmImage: 'ubuntu-latest'
+  
+
 
 stages:
-- stage: BuildAndDeploy
+- stage: ProductPipeline 
+  displayName: ProductPipeline -
 
   jobs:
+  - job: StatusTest
+    displayName: Status Test
+    pool:
+     name: RJTESTPOOL
+    steps:
+          - script: echo $(System.PullRequest.TargetBranch)
+
   - job: RunLint
     displayName: Run Lint - QC Checks
+    pool: 
+      name: RJTESTPOOL
+    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true))) 
     steps:
-       - task: Bash@3
-         inputs:
-           targetType: 'inline'
-           script: |
-             echo $(istrial1)
-             echo $(istrial2)
-             echo $(istrial3)
-             echo $(isprtargettrial)
-  
-  - job: tester
-    displayName: Tester
-    condition: and(succeeded(), or(eq(variables['develop'], true),
-                  and(eq(variables['isanybranch'], true),ne(variables['isdevelop'], true),ne(variables['isalpha'], true)))) 
+         - script: echo Run Lint - QC Checks
+
+  - job: BuildDocs
+    displayName: Build Docs
+    pool: 
+      name: RJTESTPOOL
+    #dependsOn: PublishPipelineArtifact
+    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
+               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
     steps:
-       - task: Bash@3
-         inputs:
-           targetType: 'inline'
-           script: |
-             echo This works!!
+      - checkout: none
+      - script: echo Build Docs
 
+  - job: BuildCondaEnv
+    displayName: Build Conda Env
+    pool: 
+      name: RJTESTPOOL
+    #dependsOn: PublishPipelineArtifact
+    condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
+               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
+    steps:
+      - checkout: none
+      - script: echo Build Conda Env
 
+  - job: BuildTestsZip
+    displayName: Build Tests Zip
+    pool: 
+      name: RJTESTPOOL
+    #dependsOn: PublishPipelineArtifact
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
+    steps:
+      - checkout: none
+      - script: echo Build Tests Zip
+
+  - job: BuildDistribution
+    displayName: Build Distribution
+    pool: 
+      name: RJTESTPOOL
+
+    dependsOn: 
+    - BuildDocs
+    - BuildCondaEnv
+    - BuildTestsZip
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
+    steps:
+      - checkout: none
+      - script: echo Build Distribution
+
+  - job: BuildDockerImages
+    displayName: Build Docker Images
+    pool: 
+      name: RJTESTPOOL
+
+    dependsOn: BuildDistribution
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
+    steps:
+      - checkout: none
+      - script: echo Build Docker Images
+
+  - job: RunUnitTest
+    displayName: Run Unit Tests
+    pool: 
+      name: RJTESTPOOL  
+    dependsOn: BuildDockerImages
+    condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
+               eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
+               eq(variables['isprtargethotfix'], true))) 
+    steps:
+      - checkout: none
+      - script: echo Run Unit Tests
+
+  - job: RunPipeLine
+    displayName: Run Pipeline
+    pool: 
+      name: RJTESTPOOL
+    dependsOn: RunUnitTest
+    condition: and(succeeded(), or(eq(variables['ishotfix'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true),
+               eq(variables['istagbeta'], true),eq(variables['istagrc'], true))) 
+    steps:
+      - checkout: none
+      - script: echo Run Pipeline
+
+  - job: RunFunctionalTest
+    displayName: Run Functional Tests
+    pool: 
+      name: RJTESTPOOL
+    dependsOn: RunUnitTest
+    condition: and(succeeded(), or(eq(variables['isreleaserc'], true),
+               eq(variables['ishotfix'], true),eq(variables['istagrc'], true))) 
+    steps:
+      - checkout: none
+      - script: echo Run Functional Tests
+
+  - job: DeliverDockerImage
+    displayName: Deliver Docker Image
+    pool: 
+      name: RJTESTPOOL
+    dependsOn: 
+    - RunFunctionalTest
+    - BuildDockerImages
+    condition: and(succeeded(), or(eq(variables['istagrc'], true),
+               and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
+               ne(variables['istagrc'], true))))
+    steps:
+      - checkout: none
+      - script: echo Deliver Docker Image  
+      
+  - job: BuildProjectSite
+    displayName: Build Project Site
+    pool: 
+      name: RJTESTPOOL
+    dependsOn: 
+    - RunLint
+    - BuildDistribution
+    - RunUnitTest
+    - RunFunctionalTest
+    condition: and(succeeded(), or(eq(variables['istagrc'], true),
+               and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
+               ne(variables['istagrc'], true)))) 
+    steps:
+      - checkout: none
+      - script: echo Build Project Site
