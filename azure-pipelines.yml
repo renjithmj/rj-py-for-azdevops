@@ -4,6 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+# Test
 name: $(build.sourceBranch)-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
@@ -11,8 +12,8 @@ trigger:
     include: 
     - develop
     - releases/*
-    - hotfix/*
-    - ./rel/*
+    - hotfixes/*
+
   paths:
     exclude: 
     # Exclude README.md from triggering content deployments
@@ -24,28 +25,28 @@ trigger:
 
 # PR for the below target branches triggers linting and few other steps   
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/repos/azure-repos-git?view=azure-devops&tabs=yaml#pr-triggers
-#PR trigger doesnt work for Azure Repos unless the branch policies for each branch is set....one more reason why GitHub is much better :-)
+#PR trigger doesnt work for Azure Repos unless the branch policies for each branch is set
 pr:
   branches:
     include:
     - develop
     - releases/*
-    - hf/*
+    - hotfixes/*
 
 variables:
-  isdevelop: $[contains(variables['Build.SourceBranch'], 'refs_heads_develop')]
-  ishotfix: $[contains(variables['Build.SourceBranch'], 'hotfix/')]
-  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases/')]
-  isanytag: $[contains(variables['Build.SourceBranch'], 'refs_tags')]
+  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
+  ishotfix: $[contains(variables['Build.SourceBranch'], 'hotfixes')]
+  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases')]
+  isanytag: $[contains(variables['Build.SourceBranch'], 'refs/tags')]
   isanypr: $[contains(variables['Build.SourceBranch'], 'merge')]
-  isreleasealpha: $[and(contains(variables['build.sourceBranch'], 'refs_heads'), contains(variables['build.sourceBranch'], '-alpha'))]
-  isreleasebeta: $[and(contains(variables['build.sourceBranch'], 'refs_heads'), contains(variables['build.sourceBranch'], '-beta'))]
-  isreleaserc: $[and(contains(variables['build.sourceBranch'], 'refs_heads'), contains(variables['build.sourceBranch'], '-rc'))]
-  istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs_tags'), contains(variables['build.sourceBranch'], '-alpha'))]
-  istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs_tags'), contains(variables['build.sourceBranch'], '-beta'))]
-  istagrc: $[and(contains(variables['build.sourceBranch'], 'refs_tags'), contains(variables['build.sourceBranch'], '-rc'))]
+  isreleasealpha: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-alpha'))]
+  isreleasebeta: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-beta'))]
+  isreleaserc: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-rc'))]
+  istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-alpha'))]
+  istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-beta'))]
+  istagrc: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
   isprtargetdevelop: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'develop'))]
-  isprtargethotfix: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'hotfixes/'))]
+  isprtargethotfix: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'hotfixes'))]
   isprtargetrelalpha: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-alpha'))]
   isprtargetrelbeta: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-beta'))]
   isprtargetrelrc: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-rc'))]
@@ -54,16 +55,39 @@ variables:
 
 
 stages:
-- stage: ProductPipeline 
+- stage: CICD 
   displayName: ->
 
   jobs:
+
+  - job: PublishPipelineArtifact
+    displayName: Git pull and make files available to pipeline process
+    pool:
+     name: RJTESTPOOL
+    # PublishPipelineArtifact task packages source code and makes it available at $(System.ArtifactsDirectory)/product-pipeline-artifact
+    # Checkout set to none for all jobs afer this
+    steps:
+       - task: CopyFiles@2
+         inputs:
+           SourceFolder: '$(Build.SourcesDirectory)'
+           contents: |
+             src/**
+             test/**
+             requirements.txt
+           targetFolder: $(Build.ArtifactStagingDirectory)
+       - task: PublishBuildArtifacts@1
+         inputs:
+           pathToPublish: $(Build.ArtifactStagingDirectory)
+           ArtifactName: product-pipeline-artifact
   - job: StatusTest
     displayName: Status Test
     pool:
      name: RJTESTPOOL
     steps:
           - script: echo $(System.PullRequest.TargetBranch)
+          - script: echo $(build.sourceBranch)
+          - script: echo $(isreleaserc)
+          - script: echo $(isprtargetrelrc)
 
   - job: RunLint
     displayName: Run Lint - QC Checks
@@ -77,9 +101,9 @@ stages:
     displayName: Build Docs
     pool: 
       name: RJTESTPOOL
-    #dependsOn: PublishPipelineArtifact
+    dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
-               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
+               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true),eq(variables['ishotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Build Docs
@@ -88,9 +112,9 @@ stages:
     displayName: Build Conda Env
     pool: 
       name: RJTESTPOOL
-    #dependsOn: PublishPipelineArtifact
+    dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanypr'], true),eq(variables['isanytag'], true),
-               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true))) 
+               eq(variables['isanyrelease'], true),eq(variables['isdevelop'], true),eq(variables['ishotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Build Conda Env
@@ -99,10 +123,10 @@ stages:
     displayName: Build Tests Zip
     pool: 
       name: RJTESTPOOL
-    #dependsOn: PublishPipelineArtifact
+    dependsOn: PublishPipelineArtifact
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
                eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-               eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargethotfix'], true),eq(variables['ishotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Build Tests Zip
@@ -118,7 +142,7 @@ stages:
     - BuildTestsZip
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
                eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-               eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargethotfix'], true),eq(variables['ishotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Build Distribution
@@ -131,7 +155,7 @@ stages:
     dependsOn: BuildDistribution
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
                eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-               eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargethotfix'], true),eq(variables['ishotfix'], true)))  
     steps:
       - checkout: none
       - script: echo Build Docker Images
@@ -143,7 +167,7 @@ stages:
     dependsOn: BuildDockerImages
     condition: and(succeeded(), or(eq(variables['isanytag'], true),eq(variables['isanyrelease'], true),eq(variables['ishotfix'], true),
                eq(variables['isprtargetrelalpha'], true),eq(variables['isprtargetrelbeta'], true),eq(variables['isprtargetrelrc'], true),
-               eq(variables['isprtargethotfix'], true))) 
+               eq(variables['isprtargethotfix'], true),eq(variables['ishotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Run Unit Tests
@@ -154,7 +178,7 @@ stages:
       name: RJTESTPOOL
     dependsOn: RunUnitTest
     condition: and(succeeded(), or(eq(variables['ishotfix'], true),eq(variables['isreleasebeta'], true),eq(variables['isreleaserc'], true),
-               eq(variables['istagbeta'], true),eq(variables['istagrc'], true))) 
+               eq(variables['istagbeta'], true),eq(variables['istagrc'], true),eq(variables['ishotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Run Pipeline
@@ -165,7 +189,7 @@ stages:
       name: RJTESTPOOL
     dependsOn: RunUnitTest
     condition: and(succeeded(), or(eq(variables['isreleaserc'], true),
-               eq(variables['ishotfix'], true),eq(variables['istagrc'], true))) 
+               eq(variables['ishotfix'], true),eq(variables['istagrc'], true),eq(variables['ishotfix'], true))) 
     steps:
       - checkout: none
       - script: echo Run Functional Tests
