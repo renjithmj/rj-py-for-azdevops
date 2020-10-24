@@ -10,8 +10,6 @@ name: $(build.sourceBranch)-$(Date:yyyyMMdd)$(Rev:.r)
 trigger:
   branches:
     include: 
-    - develop
-    - releases/*
     - trial
 
  
@@ -28,7 +26,6 @@ stages:
  
   - job: DeliverDockerImage
     displayName: Deliver Docker Image
-    dependsOn: 
     steps:
       - checkout: none
       - script: echo Deliver Docker Image  
@@ -37,8 +34,8 @@ stages:
     displayName: Build Project Site
     dependsOn: 
     - DeliverDockerImage
-    condition: and(succeeded(), eq(dependencies.RunFunctionalTest.result, 'Succeeded')),
+    condition: and(succeeded(), eq(dependencies.DeliverDockerImage.result, 'Succeeded'))
                
     steps:
       - checkout: none
-      - script: echo $(dependencies.RunFunctionalTest.result)
+      - script: echo $(dependencies.DeliverDockerImage.result)
