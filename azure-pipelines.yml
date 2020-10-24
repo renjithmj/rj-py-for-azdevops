@@ -40,8 +40,8 @@ stages:
   - job: BuildProjectSite
     displayName: Build Project Site
     dependsOn: 
-    - DeliverDockerImage1
-    condition: and(succeeded(), eq(dependencies.DeliverDockerImage.result, 'Skipped'))
+    - DeliverDockerImage
+    condition: and(succeeded(), eq(dependencies.DeliverDockerImage.result, 'Success'))
                
     steps:
       - checkout: none
