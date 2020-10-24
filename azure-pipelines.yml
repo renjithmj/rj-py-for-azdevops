@@ -34,8 +34,8 @@ stages:
     displayName: Build Project Site
     dependsOn: 
     - DeliverDockerImage
-    condition: and(succeeded(), eq(dependencies.DeliverDockerImage.result, 'test'))
+    condition: and(succeeded(), eq(dependencies.DeliverDockerImage.result, 'Succeeded'))
                
     steps:
       - checkout: none
-      - script: echo $(dependencies.DeliverDockerImage.result)
+      - script: echo $(dependencies['DeliverDockerImage']['result'])
