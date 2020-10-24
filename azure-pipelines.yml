@@ -14,35 +14,7 @@ trigger:
     - releases/*
     - trial
 
-  paths:
-    exclude: 
-    # Exclude README.md from triggering content deployments
-    - README.md
-    # Include tags for CI
-  tags:
-    include:
-    - '*'
-
-# PR for the below target branches triggers linting and few other steps   
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/repos/azure-repos-git?view=azure-devops&tabs=yaml#pr-triggers
-#PR trigger doesnt work for Azure Repos unless the branch policies for each branch is set
-pr:
-  branches:
-    include:
-    - develop
-    - releases/*
-    - hotfixes/*
-
-variables:
-  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
-  ishotfix: $[contains(variables['Build.SourceBranch'], 'hotfixes')]
-  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases')]
-  isanytag: $[contains(variables['Build.SourceBranch'], 'refs/tags')]
-  istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-alpha'))]
-  istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-beta'))]
-  istagrc: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
-  istagOther: $[and(eq(variables['isanytag'], true),eq(variables['istagalpha'], false),eq(variables['istagbeta'], false),eq(variables['istagrc'], false))]
-
+ 
   
 pool:
   vmImage: 'ubuntu-latest'
