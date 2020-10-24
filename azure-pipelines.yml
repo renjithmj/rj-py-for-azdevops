@@ -43,7 +43,7 @@ stages:
      - DeliverDockerImage1
     condition: |
      and( eq(1, 1),
-           in(dependencies.DeliverDockerImage.result, Null, 'Skipped'))
+           ne(dependencies.DeliverDockerImage.result, 'Succeeded'))
                
     steps:
       - checkout: none
