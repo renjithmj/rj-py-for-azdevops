@@ -41,7 +41,7 @@ stages:
     displayName: Build Project Site
     dependsOn: 
     - DeliverDockerImage
-    condition: and(succeeded(), eq(dependencies.DeliverDockerImage.result, 'Succeeded'))
+    condition: and(succeeded(), eq(dependencies.DeliverDockerImage1.result, 'Succeeded'))
                
     steps:
       - checkout: none
