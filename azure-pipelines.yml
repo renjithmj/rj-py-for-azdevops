@@ -42,7 +42,7 @@ stages:
     dependsOn:
      - DeliverDockerImage
     condition: |
-     and(succeeded(), eq(1, 2),
+     and( eq(1, 1),
            in(dependencies.DeliverDockerImage.result, 'Succeeded', 'Skipped'))
                
     steps:
