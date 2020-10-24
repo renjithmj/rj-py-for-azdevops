@@ -45,6 +45,7 @@ variables:
   istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-alpha'))]
   istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-beta'))]
   istagrc: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
+  istagOther: $[and(eq(variables['isanytag'], true),eq(variables['istagalpha'], false),eq(variables['istagbeta'], false),eq(variables['istagrc'], false))]
   isprtargetdevelop: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'develop'))]
   isprtargethotfix: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'hotfixes'))]
   isprtargetrelalpha: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-alpha'))]
@@ -84,10 +85,12 @@ stages:
     pool:
      name: RJTESTPOOL
     steps:
-          - script: echo $(System.PullRequest.TargetBranch)
           - script: echo $(build.sourceBranch)
-          - script: echo $(isreleaserc)
-          - script: echo $(isprtargetrelrc)
+          - script: echo $(isanytag)
+          - script: echo $(istagalpha)
+          - script: echo $(istagbeta)
+          - script: echo $(istagrc)
+          - script: echo $(istagOther)
 
   - job: RunLint
     displayName: Run Lint - QC Checks
@@ -201,9 +204,8 @@ stages:
     dependsOn: 
     - RunFunctionalTest
     - BuildDockerImages
-    condition: and(succeeded(), or(eq(variables['istagrc'], true),
-               and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
-               ne(variables['istagrc'], true))))
+    condition: and(succeeded(), or(and(eq(variables['istagrc'], true),in(dependencies.RunFunctionalTest.result, 'Succeeded')),
+                and(eq(variables['istagOther'], true),in(dependencies.RunFunctionalTest.result, 'Skipped'))))
     steps:
       - checkout: none
       - script: echo Deliver Docker Image  
@@ -217,9 +219,8 @@ stages:
     - BuildDistribution
     - RunUnitTest
     - RunFunctionalTest
-    condition: and(succeeded(), or(eq(variables['istagrc'], true),
-               and(eq(variables['isanytag'], true),ne(variables['istagalpha'], true),ne(variables['istagbeta'], true),
-               ne(variables['istagrc'], true)))) 
+    condition: and(succeeded(), or(and(eq(variables['istagrc'], true),in(dependencies.RunFunctionalTest.result, 'Succeeded')),
+                and(eq(variables['istagOther'], true),in(dependencies.RunFunctionalTest.result, 'Skipped'))))
     steps:
       - checkout: none
-      - script: echo Build Project Site
+      - script: echo $(istagOther)
