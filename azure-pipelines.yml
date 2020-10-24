@@ -32,7 +32,7 @@ stages:
 
   - job: DeliverDockerImage1
     displayName: Deliver Docker Image1
-    condition: and(succeeded(), eq(1, 1))
+    condition: and(succeeded(), eq(1, 2))
     steps:
       - checkout: none
       - script: echo Deliver Docker Image  1
@@ -41,7 +41,7 @@ stages:
     displayName: Build Project Site
     dependsOn: 
     - DeliverDockerImage
-    condition: and(succeeded(), eq(dependencies.DeliverDockerImage1.result, 'Succeeded'))
+    condition: and(succeeded(), eq(dependencies.DeliverDockerImage.result, 'Succeeded'))
                
     steps:
       - checkout: none
