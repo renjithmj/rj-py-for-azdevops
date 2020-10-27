@@ -35,8 +35,7 @@ variables:
   isprtargetrelbeta: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-beta'))]
   isprtargetrelrc: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-rc'))]
   version_string: $(Build.SourceVersion)
-  ${{if eq(variables['isanytag'], true)}}:
-    version_string: $(Build.SourceBranchName)
+
 
 stages:
 - stage: CICD 
@@ -44,13 +43,13 @@ stages:
 
   jobs:
 
- 
+    
   - job: DeliverDockerImage
     displayName: Deliver Docker Image
     steps:
       - checkout: none
+      - script: echo '##vso[task.setvariable variable=buildVersion]$(build.sourceBranch)'
+        condition: eq(variables['isanytag'], 'true')
       - script: echo $(version_string)
-      - script: echo $(Build.SourceVersion)
-      - script: echo $(Build.SourceBranchName)
 
   
