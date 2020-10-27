@@ -17,6 +17,28 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  isdevelop: $[contains(variables['Build.SourceBranch'], 'develop')]
+  ishotfix: $[contains(variables['Build.SourceBranch'], 'hotfix/')]
+  isanyrelease: $[contains(variables['Build.SourceBranch'], 'releases/')]
+  isanytag: $[contains(variables['Build.SourceBranch'], 'tag')]
+  isanypr: $[contains(variables['Build.SourceBranch'], 'merge')]
+  isreleasealpha: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-alpha'))]
+  isreleasebeta: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-beta'))]
+  isreleaserc: $[and(contains(variables['build.sourceBranch'], 'refs/heads'), contains(variables['build.sourceBranch'], '-rc'))]
+  istagalpha: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-alpha'))]
+  istagbeta: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-beta'))]
+  istagrc: $[and(contains(variables['build.sourceBranch'], 'refs/tags'), contains(variables['build.sourceBranch'], '-rc'))]
+  isprtargetdevelop: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'develop'))]
+  isprtargethotfix: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], 'hotfixes/'))]
+  isprtargetrelalpha: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-alpha'))]
+  isprtargetrelbeta: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-beta'))]
+  isprtargetrelrc: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-rc'))]
+  ${{if eq(variables['isanytag'], false)}}:
+    version_string: $[Build.SourceVersion]
+  ${{if eq(variables['isanytag'], true)}}:
+    version_string: $[Build.SourceBranchName]
+
 stages:
 - stage: CICD 
   displayName: ->
@@ -28,7 +50,7 @@ stages:
     displayName: Deliver Docker Image
     steps:
       - checkout: none
-      - script: echo Deliver Docker Image  
+      - script: echo $(dependencies)
 
   - job: DeliverDockerImage1
     displayName: Deliver Docker Image1
