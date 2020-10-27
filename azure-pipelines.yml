@@ -34,9 +34,7 @@ variables:
   isprtargetrelalpha: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-alpha'))]
   isprtargetrelbeta: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-beta'))]
   isprtargetrelrc: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-rc'))]
-  version_string: "testing"
-  ${{if eq(variables['isanytag'], false)}}:
-    version_string: 'test'
+  version_string: $(Build.SourceVersion)
   ${{if eq(variables['isanytag'], true)}}:
     version_string: $(Build.SourceBranchName)
 
