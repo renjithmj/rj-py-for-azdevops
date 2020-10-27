@@ -52,4 +52,8 @@ stages:
         condition: eq(variables['isanytag'], 'false')
       - script: echo $(version_string)
 
-  
+  - job: DeliverDockerImage2
+    displayName: Deliver Docker Image
+    steps:
+      - checkout: none
+      - script: echo $(version_string)
