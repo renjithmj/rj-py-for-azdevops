@@ -36,7 +36,7 @@ variables:
   isprtargetrelrc: $[and(contains(variables['build.sourceBranch'], 'merge'), contains(variables['System.PullRequest.TargetBranch'], '-rc'))]
   version_string: ""
   ${{if eq(variables['isanytag'], false)}}:
-    version_string: $(Build.SourceVersion)
+    version_string: '$(Build.SourceVersion)'
   ${{if eq(variables['isanytag'], true)}}:
     version_string: $(Build.SourceBranchName)
 
