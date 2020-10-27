@@ -50,23 +50,6 @@ stages:
     displayName: Deliver Docker Image
     steps:
       - checkout: none
-      - script: echo $(dependencies)
+      - script: echo $(version_string)
 
-  - job: DeliverDockerImage1
-    displayName: Deliver Docker Image1
-    condition: and(succeeded(), eq(1, 2))
-    steps:
-      - checkout: none
-      - script: echo Deliver Docker Image  1
-      
-  - job: BuildProjectSite
-    displayName: Build Project Site
-    dependsOn:
-     - DeliverDockerImage1
-    condition: |
-     and( eq(1, 1),
-           ne(dependencies.DeliverDockerImage.result, 'Succeeded'))
-               
-    steps:
-      - checkout: none
-      - script: echo $(dependencies)
+  
