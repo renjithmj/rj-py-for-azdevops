@@ -4,6 +4,8 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/process/conditions?view=azure-devops&tabs=yaml
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+#https://medium.com/microsoftazure/how-to-pass-variables-in-azure-pipelines-yaml-tasks-5c81c5d31763
+#https://stackoverflow.com/questions/57532138/can-conditional-variable-assignment-be-done-in-azure-pipelines
 # Test
 name: $(build.sourceBranch)-$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -44,15 +46,22 @@ stages:
 
     
   - job: DeliverDockerImage1
-    displayName: Deliver Docker Image
+    displayName: Deliver Docker Image1
     steps:
+      
       - checkout: none
       - script: Write-Host '##vso[task.setvariable variable=version_string]$(build.sourceBranchName)'
         condition: eq(variables['isanytag'], 'false')
+        name: variableSetStep
       - script: echo $(version_string)
 
   - job: DeliverDockerImage2
-    displayName: Deliver Docker Image
+    dependsOn:
+    variables:
+      # Define the variable FOO from the previous job
+      # Note the use of single quotes!
+      version_string: $[ dependencies.DeliverDockerImage1.outputs['variableSetStep.version_string'] ]
+    displayName: Deliver Docker Image2
     steps:
       - checkout: none
       - script: echo $(version_string)
