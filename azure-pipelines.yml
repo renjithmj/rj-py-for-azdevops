@@ -49,7 +49,7 @@ stages:
     steps:
       - checkout: none
       - script: echo '##vso[task.setvariable variable=version_string]$(build.sourceBranch)'
-        condition: eq(variables['isanytag'], 'true')
+        condition: eq(variables['isanytag'], 'false')
       - script: echo $(version_string)
 
   
